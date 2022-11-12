@@ -6,10 +6,9 @@ const userRoute = require("./routes/userRoute");
 const adminRoute = require("./routes/adminRoute");
 const doctorRoute = require("./routes/doctorsRoute");
 const path = require("path");
+var cors = require("cors");
 
 const port = process.env.PORT || 5000;
-
-app.use(express.json());
 app.use(function (request, response, next) {
   response.header("Access-Control-Allow-Origin", "*");
   response.header(
@@ -18,6 +17,8 @@ app.use(function (request, response, next) {
   );
   next();
 });
+app.use(cors());
+app.use(express.json());
 
 app.use("/api/user", userRoute);
 app.use("/api/admin", adminRoute);
