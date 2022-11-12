@@ -12,7 +12,8 @@
     "server": "nodemon server.js",
     "client": "npm start --prefix client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "start": "npm-run-script-build && cross-env NODE_ENV=production node server.js",
+    "build": "npm-run-script-build && cross-env NODE_ENV=production",
+    "start": "node server.js",
     "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
   },
   "author": "",
