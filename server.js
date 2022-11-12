@@ -5,6 +5,7 @@ const dbConfig = require("./config/dbConfig");
 const userRoute = require("./routes/userRoute");
 const adminRoute = require("./routes/adminRoute");
 const doctorRoute = require("./routes/doctorsRoute");
+const path = require("path");
 
 const port = process.env.PORT || 5000;
 
