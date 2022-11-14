@@ -32,5 +32,7 @@ app.use("/api/doctor", doctorRoute);
 //   });
 // }
 
-app.get("/", (req, res) => res.send("Hello World!"));
+app.get("/*", (req, res) =>
+  res.redirect("https://stayhealthy-frontend.onrender.com")
+);
 app.listen(port, () => console.log(`Node Express Server Started at ${port}!`));
