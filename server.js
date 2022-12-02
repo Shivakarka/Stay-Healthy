@@ -7,6 +7,7 @@ const adminRoute = require("./routes/adminRoute");
 const doctorRoute = require("./routes/doctorsRoute");
 const path = require("path");
 var cors = require("cors");
+const stripe = require("stripe")(process.env.STRIPE_SECRET);
 
 const port = process.env.PORT || 5000;
 app.use(function (request, response, next) {
@@ -24,15 +25,27 @@ app.use("/api/user", userRoute);
 app.use("/api/admin", adminRoute);
 app.use("/api/doctor", doctorRoute);
 
-// if (process.env.NODE_ENV === "production") {
-//   app.use("/", express.static("build"));
+const YOUR_DOMAIN = "https://stayhealthy-frontend.onrender.com";
 
-//   app.get("*", (req, res) => {
-//     res.sendFile(path.resolve(__dirname, "build/index.html"));
-//   });
-// }
+app.post("/create-checkout-session", async (req, res) => {
+  const session = await stripe.checkout.sessions.create({
+    line_items: [
+      {
+        // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+        price: "price_1MATAjSIf0U3atsp3wQ1gji3",
+        quantity: 1,
+      },
+    ],
+    mode: "payment",
+    success_url: `${YOUR_DOMAIN}/BookSuccess`,
+    cancel_url: `${YOUR_DOMAIN}/BookCancel`,
+  });
+
+  res.redirect(303, session.url);
+});
 
 app.get("/*", (req, res) =>
   res.redirect("https://stayhealthy-frontend.onrender.com")
 );
+
 app.listen(port, () => console.log(`Node Express Server Started at ${port}!`));
