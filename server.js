@@ -37,15 +37,22 @@ app.post("/create-checkout-session", async (req, res) => {
       },
     ],
     mode: "payment",
-    success_url: `${YOUR_DOMAIN}/BookSuccess`,
-    cancel_url: `${YOUR_DOMAIN}/BookCancel`,
+    success_url: `${YOUR_DOMAIN}/#/BookSuccess`,
+    cancel_url: `${YOUR_DOMAIN}/#/BookCancel`,
   });
 
   res.redirect(303, session.url);
 });
 
-app.get("/*", (req, res) =>
-  res.redirect("https://stayhealthy-frontend.onrender.com")
-);
+app.get("/*", function (req, res) {
+  res.sendFile(
+    path.join(__dirname, "/client/public/index.html"),
+    function (err) {
+      if (err) {
+        res.status(500).send(err);
+      }
+    }
+  );
+});
 
 app.listen(port, () => console.log(`Node Express Server Started at ${port}!`));
