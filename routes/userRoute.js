@@ -212,19 +212,64 @@ router.post("/book-appointment", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/check-booking-avilability", authMiddleware, async (req, res) => {
+router.post("/check-booking-availability", authMiddleware, async (req, res) => {
   try {
-    const date = moment(req.body.date, "DD-MM-YYYY").toISOString();
-    const fromTime = moment(req.body.time, "HH:mm")
-      .subtract(1, "hours")
-      .toISOString();
-    const toTime = moment(req.body.time, "HH:mm").add(1, "hours").toISOString();
+    const currentDate = moment().toISOString();
+    const requestedDate = moment(req.body.date, "DD-MM-YYYY").toISOString();
+    const requestedTime = moment(req.body.time, "HH:mm");
+
+    if (requestedDate < currentDate) {
+      return res.status(400).send({
+        message: "Invalid date. Please provide a date starting from tomorrow.",
+        success: false,
+      });
+    }
+
     const doctorId = req.body.doctorId;
+    const doctor = await Doctor.findOne({ _id: doctorId });
+
+    let isTimeWithinTimings = false;
+
+    for (let i = 0; i < doctor.timings.length; i++) {
+      const startTimeMoment = moment(doctor.timings[i], "HH:mm");
+      const endTimeMoment = moment(doctor.timings[i + 1], "HH:mm");
+
+      console.log("Start Time:", startTimeMoment);
+      console.log("End Time:", endTimeMoment);
+
+      if (!startTimeMoment.isValid() || !endTimeMoment.isValid()) {
+        console.log("Invalid time format");
+      } else {
+        isTimeWithinTimings = requestedTime.isBetween(
+          startTimeMoment,
+          endTimeMoment,
+          null,
+          "[]"
+        );
+
+        if (isTimeWithinTimings) {
+          break;
+        }
+      }
+    }
+
+    if (!isTimeWithinTimings) {
+      return res.status(400).send({
+        message:
+          "Invalid time. Please provide a time within the doctor's specified timings.",
+        success: false,
+      });
+    }
+
+    const fromTime = requestedTime.subtract(1, "hours").toISOString();
+    const toTime = requestedTime.add(1, "hours").toISOString();
+
     const appointments = await Appointment.find({
       doctorId,
-      date,
+      date: requestedDate,
       time: { $gte: fromTime, $lte: toTime },
     });
+
     if (appointments.length > 0) {
       return res.status(200).send({
         message: "Appointments not available",
@@ -239,7 +284,7 @@ router.post("/check-booking-avilability", authMiddleware, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send({
-      message: "Error booking appointment",
+      message: "Error checking appointment availability",
       success: false,
       error,
     });
